@@ -8,6 +8,12 @@ using FuzzyString;
 using System.Data.SqlClient;
 namespace ETLJob
 {
+    public class City
+    {
+        public String Name { get; set; }
+        public String Province { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
@@ -37,18 +43,42 @@ namespace ETLJob
             var citiesListDataTable = new DataTable();
             sqlDataAdapter = new SqlDataAdapter("select * from Staging.cities", sqlConnectionString);
             sqlDataAdapter.Fill(citiesListDataTable);
-            var citiesList = citiesListDataTable.AsEnumerable().Select(row => new
+            List<City> citiesList = citiesListDataTable.AsEnumerable().Select(row => new City
             {
-                City = row["City"],
-                Province = row["Province"]
+                Name = row["City"].ToString(),
+                Province = row["Province"].ToString()
+                //Province = row["Province"]
             }).ToList();
+
+            var sqlConnection = new SqlConnection(sqlConnectionString);
+            sqlConnection.Open();
+
+
             foreach (var row in ordersList)
             {
-                
+                if (row.PaymentCity.ToString() == "")
+                {
+
+                }
+                else
+                {
+                    var result = CityMatched(row.PaymentCity.ToString().ToUpper(), citiesList);
+                    if (result != null)
+                    {
+                        SqlCommand sql = new SqlCommand();
+                        sql.Connection = sqlConnection;
+                        sql.CommandText = "UPDATE Staging.buyon_order set matched_city = @matched_city where order_id = @order_id";
+                        sql.Parameters.AddWithValue("@matched_city", result);
+                        sql.Parameters.AddWithValue("@order_id", row.OrderID);
+                        sql.ExecuteNonQuery();
+
+                    }
+                }
+
             }
         }
 
-        public static String CityMatched(String city, ref List<String> cities)
+        public static String CityMatched(String city, List<City> cities)
         {
             List<FuzzyStringComparisonOptions> options = new List<FuzzyStringComparisonOptions>();
 
@@ -61,10 +91,10 @@ namespace ETLJob
 
             foreach (var c in cities)
             {
-                var result = city.ApproximatelyEquals(c, options, tolerance);
+                var result = city.ApproximatelyEquals(c.Name.ToUpper(), options, tolerance);
                 if (result)
                 {
-                    return c;
+                    return c.Name;
                 }
             }
 
