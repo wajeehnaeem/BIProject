@@ -6,12 +6,20 @@ using System.Threading.Tasks;
 using System.Data;
 using FuzzyString;
 using System.Data.SqlClient;
+
+
 namespace ETLJob
 {
     public class City
     {
         public String Name { get; set; }
         public String Province { get; set; }
+    }
+
+    public class Person
+    {
+        public String Name { get; set; }
+        public String Gender { get; set; }
     }
 
     class Program
@@ -72,10 +80,67 @@ namespace ETLJob
                         sql.Parameters.AddWithValue("@order_id", row.OrderID);
                         sql.ExecuteNonQuery();
 
+                        // Takes Too Damn Long
+
                     }
                 }
 
             }
+
+            var CustomersDataTable = new DataTable();
+            var CustomersqlDataAdapter = new SqlDataAdapter("select * from Staging.buyon_customer", sqlConnectionString);
+            sqlDataAdapter.Fill(CustomersDataTable);
+
+            var CustomersList = ordersDataTable.AsEnumerable().Select(row => new
+            {
+                customerId = row["customer_id"],
+                FirstName = row["firstname"],
+                LastName = row["lastname"],
+            }).ToList();
+
+            foreach (var customer in CustomersList)
+            {
+                String Gender = ComputedGender(customer.FirstName.ToString());
+                SqlCommand sql = new SqlCommand();
+                sql.Connection = sqlConnection;
+                sql.CommandText = "UPDATE Staging.buyon_customer set computed_gender= @computed_gender where customer_id = @customer_id";
+                sql.Parameters.AddWithValue("@computed_gender", Gender);
+                sql.Parameters.AddWithValue("@customer_id", customer.customerId);
+                sql.ExecuteNonQuery();
+            }
+
+        }
+
+        public static String ComputedGender(String Name)
+        {
+            var connection = new SqlConnection();
+            SqlConnectionStringBuilder connBuilder = new SqlConnectionStringBuilder();
+            connBuilder.DataSource = "127.0.0.1";
+            connBuilder.UserID = "sa";
+            connBuilder.Password = "Assasinking";
+            connBuilder.InitialCatalog = "Buyon";
+
+            connection.ConnectionString = connBuilder.ConnectionString;
+            connection.Open();
+
+            StringBuilder sql = new StringBuilder();
+            sql.AppendLine("SELECT * FROM Staging.Muslim_Names;");
+
+
+            var da = new SqlDataAdapter(sql.ToString(), connection);
+            var table = new DataTable();
+            da.Fill(table);
+
+            var DbNames = (from rows in table.Rows.OfType<DataRow>()
+                           select new
+                           {
+                               Name = rows["name"].ToString(),
+                               gender = rows["gender"],
+                           });
+
+            return GenderClassifier.ComputeGender(Name, DbNames);
+
+
         }
 
         public static String CityMatched(String city, List<City> cities)
