@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Data;
 using FuzzyString;
 using System.Data.SqlClient;
+using System.Diagnostics;
+
 namespace ETLJob
 {
     public class City
@@ -18,6 +20,8 @@ namespace ETLJob
     {
         static void Main(string[] args)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             var sqlConnectionString = new SqlConnectionStringBuilder()
             {
                 UserID = "sa",
@@ -53,7 +57,7 @@ namespace ETLJob
             var sqlConnection = new SqlConnection(sqlConnectionString);
             sqlConnection.Open();
 
-
+            
             foreach (var row in ordersList)
             {
                 if (row.PaymentCity.ToString() == "")
@@ -74,8 +78,11 @@ namespace ETLJob
 
                     }
                 }
-
+               
             }
+            sw.Stop();
+            Console.WriteLine($"Time Elapsed {(float)(sw.ElapsedMilliseconds / 1000)}");
+            Console.ReadLine();
         }
 
         public static String CityMatched(String city, List<City> cities)
@@ -87,7 +94,7 @@ namespace ETLJob
             options.Add(FuzzyStringComparisonOptions.UseLongestCommonSubsequence);
             options.Add(FuzzyStringComparisonOptions.UseLongestCommonSubstring);
 
-            FuzzyStringComparisonTolerance tolerance = FuzzyStringComparisonTolerance.Strong;
+            FuzzyStringComparisonTolerance tolerance = FuzzyStringComparisonTolerance.Normal;
 
             foreach (var c in cities)
             {
