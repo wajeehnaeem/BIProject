@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Data;
 using FuzzyString;
 using System.Data.SqlClient;
-using System.Diagnostics;
+
 
 namespace ETLJob
 {
@@ -16,12 +16,16 @@ namespace ETLJob
         public String Province { get; set; }
     }
 
+    public class Person
+    {
+        public String Name { get; set; }
+        public String Gender { get; set; }
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
             var sqlConnectionString = new SqlConnectionStringBuilder()
             {
                 UserID = "sa",
@@ -57,7 +61,7 @@ namespace ETLJob
             var sqlConnection = new SqlConnection(sqlConnectionString);
             sqlConnection.Open();
 
-            
+
             foreach (var row in ordersList)
             {
                 if (row.PaymentCity.ToString() == "")
@@ -76,13 +80,67 @@ namespace ETLJob
                         sql.Parameters.AddWithValue("@order_id", row.OrderID);
                         sql.ExecuteNonQuery();
 
+                        // Takes Too Damn Long
+
                     }
                 }
-               
+
             }
-            sw.Stop();
-            Console.WriteLine($"Time Elapsed {(float)(sw.ElapsedMilliseconds / 1000)}");
-            Console.ReadLine();
+
+            var CustomersDataTable = new DataTable();
+            var CustomersqlDataAdapter = new SqlDataAdapter("select * from Staging.buyon_customer", sqlConnectionString);
+            sqlDataAdapter.Fill(CustomersDataTable);
+
+            var CustomersList = ordersDataTable.AsEnumerable().Select(row => new
+            {
+                customerId = row["customer_id"],
+                FirstName = row["firstname"],
+                LastName = row["lastname"],
+            }).ToList();
+
+            foreach (var customer in CustomersList)
+            {
+                String Gender = ComputedGender(customer.FirstName.ToString());
+                SqlCommand sql = new SqlCommand();
+                sql.Connection = sqlConnection;
+                sql.CommandText = "UPDATE Staging.buyon_customer set computed_gender= @computed_gender where customer_id = @customer_id";
+                sql.Parameters.AddWithValue("@computed_gender", Gender);
+                sql.Parameters.AddWithValue("@customer_id", customer.customerId);
+                sql.ExecuteNonQuery();
+            }
+
+        }
+
+        public static String ComputedGender(String Name)
+        {
+            var connection = new SqlConnection();
+            SqlConnectionStringBuilder connBuilder = new SqlConnectionStringBuilder();
+            connBuilder.DataSource = "127.0.0.1";
+            connBuilder.UserID = "sa";
+            connBuilder.Password = "Assasinking";
+            connBuilder.InitialCatalog = "Buyon";
+
+            connection.ConnectionString = connBuilder.ConnectionString;
+            connection.Open();
+
+            StringBuilder sql = new StringBuilder();
+            sql.AppendLine("SELECT * FROM Staging.Muslim_Names;");
+
+
+            var da = new SqlDataAdapter(sql.ToString(), connection);
+            var table = new DataTable();
+            da.Fill(table);
+
+            var DbNames = (from rows in table.Rows.OfType<DataRow>()
+                           select new
+                           {
+                               Name = rows["name"].ToString(),
+                               gender = rows["gender"],
+                           });
+
+            return GenderClassifier.ComputeGender(Name, DbNames);
+
+
         }
 
         public static String CityMatched(String city, List<City> cities)
@@ -94,7 +152,7 @@ namespace ETLJob
             options.Add(FuzzyStringComparisonOptions.UseLongestCommonSubsequence);
             options.Add(FuzzyStringComparisonOptions.UseLongestCommonSubstring);
 
-            FuzzyStringComparisonTolerance tolerance = FuzzyStringComparisonTolerance.Normal;
+            FuzzyStringComparisonTolerance tolerance = FuzzyStringComparisonTolerance.Strong;
 
             foreach (var c in cities)
             {
