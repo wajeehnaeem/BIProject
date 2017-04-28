@@ -51,6 +51,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="StarSchema.cs" />
     <Compile Include="DoubleMetaphone.cs" />
     <Compile Include="GenderClassifier.cs" />
     <Compile Include="Program.cs" />
