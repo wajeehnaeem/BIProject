@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Data;
 using FuzzyString;
 using System.Data.SqlClient;
-
+using System.Diagnostics;
 
 namespace ETLJob
 {
@@ -26,6 +26,8 @@ namespace ETLJob
     {
         static void Main(string[] args)
         {
+            var StopWatch = new Stopwatch();
+            StopWatch.Start();
             var sqlConnectionString = new SqlConnectionStringBuilder()
             {
                 UserID = "sa",
@@ -87,28 +89,30 @@ namespace ETLJob
 
             }
 
-            var CustomersDataTable = new DataTable();
-            var CustomersqlDataAdapter = new SqlDataAdapter("select * from Staging.buyon_customer", sqlConnectionString);
-            sqlDataAdapter.Fill(CustomersDataTable);
+            //var CustomersDataTable = new DataTable();
+            //var CustomersqlDataAdapter = new SqlDataAdapter("select * from Staging.buyon_customer", sqlConnectionString);
+            //sqlDataAdapter.Fill(CustomersDataTable);
 
-            var CustomersList = ordersDataTable.AsEnumerable().Select(row => new
-            {
-                customerId = row["customer_id"],
-                FirstName = row["firstname"],
-                LastName = row["lastname"],
-            }).ToList();
+            //var CustomersList = ordersDataTable.AsEnumerable().Select(row => new
+            //{
+            //    customerId = row["customer_id"],
+            //    FirstName = row["firstname"],
+            //    LastName = row["lastname"],
+            //}).ToList();
 
-            foreach (var customer in CustomersList)
-            {
-                String Gender = ComputedGender(customer.FirstName.ToString());
-                SqlCommand sql = new SqlCommand();
-                sql.Connection = sqlConnection;
-                sql.CommandText = "UPDATE Staging.buyon_customer set computed_gender= @computed_gender where customer_id = @customer_id";
-                sql.Parameters.AddWithValue("@computed_gender", Gender);
-                sql.Parameters.AddWithValue("@customer_id", customer.customerId);
-                sql.ExecuteNonQuery();
-            }
-
+            //foreach (var customer in CustomersList)
+            //{
+            //    String Gender = ComputedGender(customer.FirstName.ToString());
+            //    SqlCommand sql = new SqlCommand();
+            //    sql.Connection = sqlConnection;
+            //    sql.CommandText = "UPDATE Staging.buyon_customer set computed_gender= @computed_gender where customer_id = @customer_id";
+            //    sql.Parameters.AddWithValue("@computed_gender", Gender);
+            //    sql.Parameters.AddWithValue("@customer_id", customer.customerId);
+            //    sql.ExecuteNonQuery();
+            //}
+            StopWatch.Stop();
+            Console.WriteLine((float)StopWatch.ElapsedMilliseconds / 1000);
+            Console.ReadLine();
         }
 
         public static String ComputedGender(String Name)
