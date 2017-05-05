@@ -5,14 +5,11 @@ using System.Text;
 using System.Data.Entity;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ETLJob.Models
+namespace ETLJob.Models.Staging
 {
-    class StagingStarSchema
-    {
-
-    }
-
+    [Table("StagingDataMart.Dates")]
     public class Date
     {
         [Key]
@@ -39,38 +36,55 @@ namespace ETLJob.Models
         public virtual ICollection<Order> Orders { get; set; }
     }
 
+    [Table("StagingDataMart.Locations")]
     public class Location
     {
         [Key]
-        public String LocationId { get; set; }
+        public int LocationId { get; set; }
+        [StringLength(255)]
         public string City { get; set; }
+        [StringLength(255)]
         public String Country { get; set; }
+        [StringLength(255)]
         public String Province { get; set; }
 
         public virtual ICollection<Order> Orders { get; set; }
     }
 
+    [Table("StagingDataMart.Products")]
     public class Product
     {
-        [Key]
-        public String ProductId { get; set; }
+        [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ProductId { get; set; }
+        public int ProductNumber { get; set; }
         //public String skuNumber { get; set; }
+        [StringLength(255)]
         public String ProductDescription { get; set; }
+        [StringLength(255)]
         public String BrandDescription { get; set; }
+        [StringLength(255)]
         public String CategoryDescription { get; set; }
+        [StringLength(255)]
         public String ProductSize { get; set; }
+        [StringLength(255)]
+        public String ProductStatus { get; set; }
+        [StringLength(255)]
+        public string RecordStatus { get; set; }
         //public String ProductRelatedInfo { get; set; }
 
         //public int itemPrice { get; set; } will get by drill through
         public virtual ICollection<Order> Orders { get; set; }
     }
 
+    [Table("StagingDataMart.Customers")]
     public class Customer
     {
         [Key]
-        public String CustomerId { get; set; }
+        public int CustomerId { get; set; }
+        [StringLength(255)]
         public String Name { get; set; }
         //public String Age { get; set; }
+        [StringLength(255)]
         public String City { get; set; }
 
         //public String address { get; set; }
@@ -78,6 +92,7 @@ namespace ETLJob.Models
         public virtual ICollection<Order> Orders { get; set; }
     }
 
+    [Table("StagingDataMart.Orders")]
     public class Order
     {
         [Key]

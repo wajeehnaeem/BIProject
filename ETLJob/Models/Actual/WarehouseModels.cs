@@ -6,13 +6,13 @@ using System.Data.Entity;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
-namespace BuyonETL
+namespace ETLJob.Models.Actual
 {
-    public class DateDimension
+    public class Date
     {
         [Key]
         public String DateId { get; set; }
-        public DateTime Date { get; set; }
+        public DateTime DateEntry { get; set; }
         public int TimeQuadrant { get; set; }
         public String DateDescription { get; set; }
         public string DayOfWeek { get; set; }
@@ -36,7 +36,7 @@ namespace BuyonETL
 
     }
 
-    public class LocationDimension
+    public class Location
     {
         [Key]
         public String LocationID { get; set; }
@@ -48,7 +48,7 @@ namespace BuyonETL
         public virtual ICollection<OrderFact> Orders { get; set; }
     }
 
-    public class ProductDimension
+    public class Product
     {
         [Key]
         public String ProductId { get; set; }
@@ -64,7 +64,7 @@ namespace BuyonETL
         public virtual ICollection<OrderFact> Orders { get; set; }
     }
 
-    public class CustomerDimension
+    public class Customer
     {
         [Key]
         public String CustomerId { get; set; }
@@ -81,10 +81,10 @@ namespace BuyonETL
     {
         [Key]
         public int OrderId { get; set; }
-        public virtual DateDimension DateFK { get; set; }
-        public virtual ProductDimension ProductFK { get; set; }
-        public virtual LocationDimension LocationFK { get; set; }
-        public virtual CustomerDimension CustomerFK { get; set; }
+        public virtual Date DateFK { get; set; }
+        public virtual Product ProductFK { get; set; }
+        public virtual Location LocationFK { get; set; }
+        public virtual Customer CustomerFK { get; set; }
         public int TransactionAmount { get; set; }
         public int DiscountedAmount { get; set; }
         public int NetAmount { get; set; }

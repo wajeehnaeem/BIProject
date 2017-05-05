@@ -58,13 +58,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\StagingStarSchemaContext.cs" />
-    <Compile Include="StarSchema.cs" />
+    <Compile Include="Models\Actual\WarehouseModels.cs" />
+    <Compile Include="Models\Staging\StagingStarSchemaContext.cs" />
     <Compile Include="DoubleMetaphone.cs" />
     <Compile Include="GenderClassifier.cs" />
-    <Compile Include="Models\StagingStarSchema.cs" />
+    <Compile Include="Models\Staging\StagingStarSchema.cs" />
+    <Compile Include="Models\Actual\WarehouseContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StagingWarehouseMigrations\Configuration.cs" />
+    <Compile Include="WarehouseMigrations\Configuration.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

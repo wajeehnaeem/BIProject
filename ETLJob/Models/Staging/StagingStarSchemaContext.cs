@@ -5,14 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.Entity;
 
-namespace ETLJob.Models
+namespace ETLJob.Models.Staging
 {
-    class StagingStarSchemaContext : DbContext
+    class StagingWarehouseContext : DbContext
     {
-        public DbSet<Date> Dates { get; set; } 
+        public StagingWarehouseContext() : base("BUYON_CONNECTION") { }
+        public DbSet<Date> Dates { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Location> Locations { get; set; }
         public DbSet<Order> Orders { get; set; }
+
     }
 }
